@@ -187,7 +187,6 @@
 
     modal.innerHTML = `
       <div class="popup-content">
-
         <button
           type="button"
           class="popup-close-btn"
@@ -225,7 +224,6 @@
           rel="nofollow sponsored noopener">
           CLAIM YOUR OFFER &rarr;
         </a>
-
       </div>
     `;
 
@@ -236,21 +234,19 @@
       link.href = REFERRAL_URL;
     });
 
-    // Load your Blogger image
+    // Load your Blogger image (Fix: Assign onerror BEFORE src)
     const img = modal.querySelector(".popup-image");
     const imageWrapper = modal.querySelector(".popup-image-wrapper");
+    const closeBtn = modal.querySelector(".popup-close-btn");
 
-    img.src = IMAGE_URL;
-
-    // Hide the image area if the image URL fails
     img.onerror = function () {
       imageWrapper.style.display = "none";
       console.warn("Popup image failed to load:", IMAGE_URL);
     };
 
-    // Close button
-    const closeBtn = modal.querySelector(".popup-close-btn");
+    img.src = IMAGE_URL;
 
+    // Close function with focus restoration
     function closePopup() {
       modal.style.display = "none";
     }
@@ -271,15 +267,21 @@
       }
     });
 
+    // Helper to show modal and move focus
+    function showPopup() {
+      modal.style.display = "flex";
+      closeBtn.focus();
+    }
+
     // Show after 3 seconds, once per browser tab session
     setTimeout(function () {
       try {
         if (!sessionStorage.getItem("jetonPopupShown")) {
-          modal.style.display = "flex";
+          showPopup();
           sessionStorage.setItem("jetonPopupShown", "true");
         }
       } catch (error) {
-        modal.style.display = "flex";
+        showPopup();
       }
     }, 3000);
   }
