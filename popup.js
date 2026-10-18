@@ -2,8 +2,9 @@
 (function () {
   const REFERRAL_URL = "https://jeton.com/register?ref=V9BSXQB8";
 
-  // Your Blogger-hosted image
-  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600/images.jpg";
+  // Your Blogger-hosted images (GIF as main, JPG as original/fallback reference)
+  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOlktDba-jwRrNfQP_Ni7AtCGtHfKR4Nw_5Gc5GEkyNr7TmXDs1J0qa0_1nfQ_zoOtw3cqw0SQzlu40TGOG1lTJwuX5NFpNzwMB-8Uhzi2Rs5MpbAerIuYzERB6c-7VZ4dYX3t3few_3jJ/s640/arlinadesign.gif";
+  const FALLBACK_IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600-rw/images.jpg";
 
   function initJetonPopup() {
     if (document.getElementById("popupModal")) return;
@@ -79,25 +80,17 @@
         text-decoration: none;
         border-radius: 12px;
         overflow: hidden;
-      }
-
-      .popup-image-wrapper {
-        width: 100%;
-        aspect-ratio: 1200 / 627;
-        overflow: hidden;
-        border-radius: 12px;
         margin: 0 auto 16px;
         background: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
       .popup-image {
         width: 100%;
-        height: 100%;
+        height: auto;
+        max-height: 240px;
         object-fit: contain;
         display: block;
+        border-radius: 12px;
       }
 
       .popup-title {
@@ -150,15 +143,12 @@
           padding: 22px 16px 17px;
           border-radius: 15px;
         }
-
         .popup-title {
           font-size: 19px;
         }
-
         .popup-description {
           font-size: 13px;
         }
-
         .popup-btn {
           font-size: 14px;
         }
@@ -169,7 +159,6 @@
         .popup-content {
           animation: none;
         }
-
         .popup-btn {
           transition: none;
         }
@@ -187,66 +176,46 @@
 
     modal.innerHTML = `
       <div class="popup-content">
-        <button
-          type="button"
-          class="popup-close-btn"
-          aria-label="Close popup">
-          &times;
-        </button>
-
+        <button id="popupCloseBtn" class="popup-close-btn" aria-label="Close Pop-up">&times;</button>
         <div class="popup-badge">SPECIAL OFFER</div>
-
-        <a
-          class="popup-image-link"
-          target="_blank"
-          rel="nofollow sponsored noopener"
-          aria-label="Visit Jeton">
-          <div class="popup-image-wrapper">
-            <img
-              class="popup-image"
-              alt="Jeton promotional offer"
-              loading="eager">
-          </div>
+        <a class="popup-image-link" target="_blank" rel="nofollow sponsored noopener">
+          <img class="popup-image" alt="Special Promotion Card" original="${FALLBACK_IMAGE_URL}">
         </a>
-
-        <h3 class="popup-title">
-          A Special Offer for You!
-        </h3>
-
-        <p class="popup-description">
-          Discover Jeton and check the available virtual card
-          offers. Join through the link below to get started.
-        </p>
-
-        <a
-          class="popup-btn"
-          target="_blank"
-          rel="nofollow sponsored noopener">
-          CLAIM YOUR OFFER &rarr;
+        <h3 class="popup-title">Exclusive Offer Available Now!</h3>
+        <p class="popup-description">Get instant access to your virtual payment card with zero hassle. Claim your offer today before it expires!</p>
+        <a class="popup-btn" target="_blank" rel="nofollow sponsored noopener">
+          🚀 CLAIM YOUR FREE CARD NOW &rarr;
         </a>
       </div>
     `;
 
     document.body.appendChild(modal);
 
-    // Set referral links
+    // Set referral links on all anchor tags
     modal.querySelectorAll("a").forEach(function (link) {
       link.href = REFERRAL_URL;
     });
 
-    // Load your Blogger image (Fix: Assign onerror BEFORE src)
+    // Image load & error handling
     const img = modal.querySelector(".popup-image");
-    const imageWrapper = modal.querySelector(".popup-image-wrapper");
-    const closeBtn = modal.querySelector(".popup-close-btn");
+    const imageLink = modal.querySelector(".popup-image-link");
 
     img.onerror = function () {
-      imageWrapper.style.display = "none";
-      console.warn("Popup image failed to load:", IMAGE_URL);
+      // If the GIF fails, try loading the fallback JPG from the original attribute
+      if (img.src !== img.getAttribute("original")) {
+        img.src = img.getAttribute("original");
+      } else {
+        // If the fallback also fails, hide the image container entirely
+        imageLink.style.display = "none";
+        console.warn("Popup images failed to load.");
+      }
     };
 
     img.src = IMAGE_URL;
 
-    // Close function with focus restoration
+    // Close functionality
+    const closeBtn = document.getElementById("popupCloseBtn");
+
     function closePopup() {
       modal.style.display = "none";
     }
@@ -267,7 +236,7 @@
       }
     });
 
-    // Helper to show modal and move focus
+    // Helper to show modal and set focus
     function showPopup() {
       modal.style.display = "flex";
       closeBtn.focus();
