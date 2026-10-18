@@ -2,9 +2,8 @@
 (function () {
   const REFERRAL_URL = "https://jeton.com/register?ref=V9BSXQB8";
 
-  // Your Blogger-hosted images (GIF as main, JPG as original/fallback reference)
-  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiOlktDba-jwRrNfQP_Ni7AtCGtHfKR4Nw_5Gc5GEkyNr7TmXDs1J0qa0_1nfQ_zoOtw3cqw0SQzlu40TGOG1lTJwuX5NFpNzwMB-8Uhzi2Rs5MpbAerIuYzERB6c-7VZ4dYX3t3few_3jJ/s640/arlinadesign.gif";
-  const FALLBACK_IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600-rw/images.jpg";
+  // Your new Blogger-hosted image
+  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB9CMzWvINGJE5y4BoNM0yxAQsP8NCT3f7sqTacDGLChB38ZIDg1KJFB_QnQniFYRJAEfl0ZY9FIRtQrTfXg80Fu5j5a8Nj1jh5PdFp-LIOw0Kej_WqXk0yhmsSc2IBmkbi45SFjnM_0dRwOtwkxHknWnG_fxEvjunnpj4BuXy87Ukf_aZ2UD-cEg2qafy/s1600/images.jpg";
 
   function initJetonPopup() {
     if (document.getElementById("popupModal")) return;
@@ -179,7 +178,7 @@
         <button id="popupCloseBtn" class="popup-close-btn" aria-label="Close Pop-up">&times;</button>
         <div class="popup-badge">SPECIAL OFFER</div>
         <a class="popup-image-link" target="_blank" rel="nofollow sponsored noopener">
-          <img class="popup-image" alt="Special Promotion Card" original="${FALLBACK_IMAGE_URL}">
+          <img class="popup-image" alt="Special Promotion Card">
         </a>
         <h3 class="popup-title">Exclusive Offer Available Now!</h3>
         <p class="popup-description">Get instant access to your virtual payment card with zero hassle. Claim your offer today before it expires!</p>
@@ -201,14 +200,8 @@
     const imageLink = modal.querySelector(".popup-image-link");
 
     img.onerror = function () {
-      // If the GIF fails, try loading the fallback JPG from the original attribute
-      if (img.src !== img.getAttribute("original")) {
-        img.src = img.getAttribute("original");
-      } else {
-        // If the fallback also fails, hide the image container entirely
-        imageLink.style.display = "none";
-        console.warn("Popup images failed to load.");
-      }
+      imageLink.style.display = "none";
+      console.warn("Popup image failed to load:", IMAGE_URL);
     };
 
     img.src = IMAGE_URL;
