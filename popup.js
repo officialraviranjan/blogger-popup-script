@@ -1,9 +1,18 @@
 <script>
+//<![CDATA[
 (function () {
   const REFERRAL_URL = "https://jeton.com/register?ref=V9BSXQB8";
-
-  // Your new Blogger-hosted image
   const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB9CMzWvINGJE5y4BoNM0yxAQsP8NCT3f7sqTacDGLChB38ZIDg1KJFB_QnQniFYRJAEfl0ZY9FIRtQrTfXg80Fu5j5a8Nj1jh5PdFp-LIOw0Kej_WqXk0yhmsSc2IBmkbi45SFjnM_0dRwOtwkxHknWnG_fxEvjunnpj4BuXy87Ukf_aZ2UD-cEg2qafy/s1600/images.jpg";
+
+  // Helper function for safe Google Analytics (GA4) tracking
+  function trackEvent(action, label) {
+    if (typeof gtag === "function") {
+      gtag("event", action, {
+        event_category: "Jeton Popup",
+        event_label: label
+      });
+    }
+  }
 
   function initJetonPopup() {
     if (document.getElementById("popupModal")) return;
@@ -190,9 +199,12 @@
 
     document.body.appendChild(modal);
 
-    // Set referral links on all anchor tags
+    // Set referral links & track clicks
     modal.querySelectorAll("a").forEach(function (link) {
       link.href = REFERRAL_URL;
+      link.addEventListener("click", function () {
+        trackEvent("click", "Claim Offer / Link Clicked");
+      });
     });
 
     // Image load & error handling
@@ -206,53 +218,47 @@
 
     img.src = IMAGE_URL;
 
-    // Close functionality
+    // Close functionality with analytics tracking
     const closeBtn = document.getElementById("popupCloseBtn");
 
-    function closePopup() {
+    function closePopup(actionSource) {
       modal.style.display = "none";
+      trackEvent("close", actionSource);
     }
 
-    closeBtn.addEventListener("click", closePopup);
+    closeBtn.addEventListener("click", function () {
+      closePopup("Close Button Clicked");
+    });
 
-    // Close when clicking the dark overlay
     modal.addEventListener("click", function (event) {
       if (event.target === modal) {
-        closePopup();
+        closePopup("Overlay Background Clicked");
       }
     });
 
-    // Close with Escape key
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && modal.style.display === "flex") {
-        closePopup();
+        closePopup("Escape Key Pressed");
       }
     });
 
-    // Helper to show modal and set focus
     function showPopup() {
       modal.style.display = "flex";
       closeBtn.focus();
+      trackEvent("view", "Popup Impression");
     }
 
-    // Show after 3 seconds, once per browser tab session
+    // Show after 3 seconds on EVERY page load/refresh
     setTimeout(function () {
-      try {
-        if (!sessionStorage.getItem("jetonPopupShown")) {
-          showPopup();
-          sessionStorage.setItem("jetonPopupShown", "true");
-        }
-      } catch (error) {
-        showPopup();
-      }
+      showPopup();
     }, 3000);
   }
 
-  // Works whether the page has loaded or not
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initJetonPopup);
   } else {
     initJetonPopup();
   }
 })();
+//]]>
 </script>
