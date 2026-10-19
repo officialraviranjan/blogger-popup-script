@@ -2,17 +2,9 @@
 //<![CDATA[
 (function () {
   const REFERRAL_URL = "https://jeton.com/register?ref=V9BSXQB8";
-  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgB9CMzWvINGJE5y4BoNM0yxAQsP8NCT3f7sqTacDGLChB38ZIDg1KJFB_QnQniFYRJAEfl0ZY9FIRtQrTfXg80Fu5j5a8Nj1jh5PdFp-LIOw0Kej_WqXk0yhmsSc2IBmkbi45SFjnM_0dRwOtwkxHknWnG_fxEvjunnpj4BuXy87Ukf_aZ2UD-cEg2qafy/s1600/images.jpg";
 
-  // Helper function for safe Google Analytics (GA4) tracking
-  function trackEvent(action, label) {
-    if (typeof gtag === "function") {
-      gtag("event", action, {
-        event_category: "Jeton Popup",
-        event_label: label
-      });
-    }
-  }
+  // Your Blogger-hosted image
+  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600/images.jpg";
 
   function initJetonPopup() {
     if (document.getElementById("popupModal")) return;
@@ -88,17 +80,25 @@
         text-decoration: none;
         border-radius: 12px;
         overflow: hidden;
+      }
+
+      .popup-image-wrapper {
+        width: 100%;
+        aspect-ratio: 1200 / 627;
+        overflow: hidden;
+        border-radius: 12px;
         margin: 0 auto 16px;
         background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .popup-image {
         width: 100%;
-        height: auto;
-        max-height: 240px;
+        height: 100%;
         object-fit: contain;
         display: block;
-        border-radius: 12px;
       }
 
       .popup-title {
@@ -151,12 +151,15 @@
           padding: 22px 16px 17px;
           border-radius: 15px;
         }
+
         .popup-title {
           font-size: 19px;
         }
+
         .popup-description {
           font-size: 13px;
         }
+
         .popup-btn {
           font-size: 14px;
         }
@@ -167,6 +170,7 @@
         .popup-content {
           animation: none;
         }
+
         .popup-btn {
           transition: none;
         }
@@ -184,76 +188,104 @@
 
     modal.innerHTML = `
       <div class="popup-content">
-        <button id="popupCloseBtn" class="popup-close-btn" aria-label="Close Pop-up">&times;</button>
+
+        <button
+          type="button"
+          class="popup-close-btn"
+          aria-label="Close popup">
+          &times;
+        </button>
+
         <div class="popup-badge">SPECIAL OFFER</div>
-        <a class="popup-image-link" target="_blank" rel="nofollow sponsored noopener">
-          <img class="popup-image" alt="Special Promotion Card">
+
+        <a
+          class="popup-image-link"
+          target="_blank"
+          rel="nofollow sponsored noopener"
+          aria-label="Visit Jeton">
+          <div class="popup-image-wrapper">
+            <img
+              class="popup-image"
+              alt="Jeton promotional offer"
+              loading="eager">
+          </div>
         </a>
-        <h3 class="popup-title">Exclusive Offer Available Now!</h3>
-        <p class="popup-description">Get instant access to your virtual payment card with zero hassle. Claim your offer today before it expires!</p>
-        <a class="popup-btn" target="_blank" rel="nofollow sponsored noopener">
-          🚀 CLAIM YOUR FREE CARD NOW &rarr;
+
+        <h3 class="popup-title">
+          A Special Offer for You!
+        </h3>
+
+        <p class="popup-description">
+          Discover Jeton and check the available virtual card
+          offers. Join through the link below to get started.
+        </p>
+
+        <a
+          class="popup-btn"
+          target="_blank"
+          rel="nofollow sponsored noopener">
+          CLAIM YOUR OFFER &rarr;
         </a>
+
       </div>
     `;
 
     document.body.appendChild(modal);
 
-    // Set referral links & track clicks
+    // Set referral links
     modal.querySelectorAll("a").forEach(function (link) {
       link.href = REFERRAL_URL;
-      link.addEventListener("click", function () {
-        trackEvent("click", "Claim Offer / Link Clicked");
-      });
     });
 
-    // Image load & error handling
+    // Load your Blogger image
     const img = modal.querySelector(".popup-image");
-    const imageLink = modal.querySelector(".popup-image-link");
+    const imageWrapper = modal.querySelector(".popup-image-wrapper");
 
+    // Fix: Attach onerror handler BEFORE setting src
     img.onerror = function () {
-      imageLink.style.display = "none";
+      imageWrapper.style.display = "none";
       console.warn("Popup image failed to load:", IMAGE_URL);
     };
 
     img.src = IMAGE_URL;
 
-    // Close functionality with analytics tracking
-    const closeBtn = document.getElementById("popupCloseBtn");
+    // Close button
+    const closeBtn = modal.querySelector(".popup-close-btn");
 
-    function closePopup(actionSource) {
+    function closePopup() {
       modal.style.display = "none";
-      trackEvent("close", actionSource);
     }
 
-    closeBtn.addEventListener("click", function () {
-      closePopup("Close Button Clicked");
-    });
+    closeBtn.addEventListener("click", closePopup);
 
+    // Close when clicking the dark overlay
     modal.addEventListener("click", function (event) {
       if (event.target === modal) {
-        closePopup("Overlay Background Clicked");
+        closePopup();
       }
     });
 
+    // Close with Escape key
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && modal.style.display === "flex") {
-        closePopup("Escape Key Pressed");
+        closePopup();
       }
     });
 
-    function showPopup() {
-      modal.style.display = "flex";
-      closeBtn.focus();
-      trackEvent("view", "Popup Impression");
-    }
-
-    // Show after 3 seconds on EVERY page load/refresh
+    // Show after 3 seconds, once per browser tab session
     setTimeout(function () {
-      showPopup();
+      try {
+        if (!sessionStorage.getItem("jetonPopupShown")) {
+          modal.style.display = "flex";
+          sessionStorage.setItem("jetonPopupShown", "true");
+        }
+      } catch (error) {
+        modal.style.display = "flex";
+      }
     }, 3000);
   }
 
+  // Works whether the page has loaded or not
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initJetonPopup);
   } else {
