@@ -8,11 +8,24 @@
     "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600/images.jpg";
 
   const STORAGE_KEY = "jetonPopupShown";
+  const POPUP_ID = "popupModal";
   const POPUP_DELAY = 3000;
 
+  // Avoid duplicate script execution.
+  if (window.__jetonPopupInitialized) return;
+  window.__jetonPopupInitialized = true;
+
   function initJetonPopup() {
-    if (!document.body || document.getElementById("popupModal")) {
-      return;
+    if (!document.body || document.getElementById(POPUP_ID)) return;
+
+    // Check session before creating the popup.
+    try {
+      if (sessionStorage.getItem(STORAGE_KEY) === "true") {
+        console.info("Jeton popup already shown in this session.");
+        return;
+      }
+    } catch (error) {
+      console.warn("Session storage unavailable.", error);
     }
 
     const style = document.createElement("style");
@@ -196,52 +209,43 @@
     document.head.appendChild(style);
 
     const modal = document.createElement("div");
-    modal.id = "popupModal";
+    modal.id = POPUP_ID;
     modal.className = "popup-overlay";
-
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-modal", "true");
     modal.setAttribute("aria-label", "Jeton special offer");
 
     modal.innerHTML = `
       <div class="popup-content">
-        <button
-          type="button"
+        <button type="button"
           class="popup-close-btn"
-          aria-label="Close popup"
-        >&times;</button>
+          aria-label="Close popup">&times;</button>
 
         <div class="popup-badge">SPECIAL OFFER</div>
 
-        <a
-          class="popup-image-link"
+        <a class="popup-image-link"
           target="_blank"
           rel="nofollow sponsored noopener"
-          aria-label="Visit Jeton"
-        >
+          aria-label="Visit Jeton">
           <div class="popup-image-wrapper">
-            <img
-              class="popup-image"
+            <img class="popup-image"
               alt="Jeton promotional offer"
-              loading="eager"
-            />
+              loading="eager" />
           </div>
         </a>
 
-        <h3 class="popup-title">
-          A Special Offer for You!
-        </h3>
+        <h3 class="popup-title">A Special Offer for You!</h3>
 
         <p class="popup-description">
           Discover Jeton and check the available virtual card
           options. Visit through my referral link to get started.
         </p>
 
-        <a
-          class="popup-btn"
+        <a class="popup-btn"
           target="_blank"
-          rel="nofollow sponsored noopener"
-        >CLAIM YOUR OFFER &rarr;</a>
+          rel="nofollow sponsored noopener">
+          CLAIM YOUR OFFER &rarr;
+        </a>
       </div>
     `;
 
@@ -255,38 +259,46 @@
     const imageWrapper = modal.querySelector(".popup-image-wrapper");
     const closeBtn = modal.querySelector(".popup-close-btn");
 
+    img.addEventListener("load", function () {
+      console.info("Jeton popup image loaded successfully.");
+    });
+
     img.addEventListener("error", function () {
       imageWrapper.style.display = "none";
       console.error("Jeton popup image failed to load:", IMAGE_URL);
     });
 
-    img.addEventListener("load", function () {
-      console.info("Jeton popup image loaded successfully.");
-    });
-
     img.src = IMAGE_URL;
 
+    let popupOpened = false;
     let previousFocus = null;
 
     function openPopup() {
-      previousFocus = document.activeElement;
-      modal.classList.add("is-visible");
-      closeBtn.focus();
+      if (popupOpened) return;
 
+      // Recheck immediately before opening.
       try {
+        if (sessionStorage.getItem(STORAGE_KEY) === "true") return;
         sessionStorage.setItem(STORAGE_KEY, "true");
       } catch (error) {
-        // Popup still works if session storage is unavailable.
+        console.warn("Could not save popup session state.", error);
       }
+
+      popupOpened = true;
+      previousFocus = document.activeElement;
+
+      modal.classList.add("is-visible");
+      document.body.style.overflow = "hidden";
+      closeBtn.focus();
+
+      console.info("Jeton popup displayed.");
     }
 
     function closePopup() {
       modal.classList.remove("is-visible");
+      document.body.style.overflow = "";
 
-      if (
-        previousFocus &&
-        typeof previousFocus.focus === "function"
-      ) {
+      if (previousFocus && typeof previousFocus.focus === "function") {
         previousFocus.focus();
       }
     }
@@ -294,46 +306,28 @@
     closeBtn.addEventListener("click", closePopup);
 
     modal.addEventListener("click", function (event) {
-      if (event.target === modal) {
-        closePopup();
-      }
+      if (event.target === modal) closePopup();
     });
 
     document.addEventListener("keydown", function (event) {
-      if (
-        event.key === "Escape" &&
-        modal.classList.contains("is-visible")
-      ) {
+      if (event.key === "Escape" && popupOpened) {
         closePopup();
       }
     });
 
-    let alreadyShown = false;
-
-    try {
-      alreadyShown = sessionStorage.getItem(STORAGE_KEY) === "true";
-    } catch (error) {
-      // If storage is blocked, show the popup normally.
-    }
-
-    if (!alreadyShown) {
-      window.setTimeout(openPopup, POPUP_DELAY);
-    }
+    window.setTimeout(openPopup, POPUP_DELAY);
 
     console.info("Jeton popup script initialized.");
   }
 
   function start() {
-    if (!document.body) {
-      document.addEventListener(
-        "DOMContentLoaded",
-        initJetonPopup,
-        { once: true }
-      );
-      return;
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", initJetonPopup, {
+        once: true
+      });
+    } else {
+      initJetonPopup();
     }
-
-    initJetonPopup();
   }
 
   start();
