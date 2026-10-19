@@ -1,138 +1,152 @@
-<script>
-//<![CDATA[
+
 (function () {
+  "use strict";
+
   const REFERRAL_URL = "https://jeton.com/register?ref=V9BSXQB8";
 
-  // Your Blogger-hosted image
-  const IMAGE_URL = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600/images.jpg";
+  const IMAGE_URL =
+    "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiLrlUNm8X7tIqbgcG5SPtQxTs8v_yGs303zCEgcEkK0g4Ib4ZcB8E9sqpLJVKkLso62-zZOipV5CgE9LNeFX9HtwOfLb0ymYhvdPDzJ_AJtS7EavXcMaFaO1_8-LiJvXeZT9YlUampm1u_LmMI1OC9h4Dyd4op4iLjmu-56244qxXbaI2Uhcw_TYzEtxlq/s1600/images.jpg";
+
+  const STORAGE_KEY = "jetonPopupShown";
+  const POPUP_DELAY = 3000;
 
   function initJetonPopup() {
-    if (document.getElementById("popupModal")) return;
+    if (!document.body || document.getElementById("popupModal")) {
+      return;
+    }
 
     const style = document.createElement("style");
+
     style.textContent = `
-      .popup-overlay {
-        position: fixed;
-        inset: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.75);
+      #popupModal.popup-overlay {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: none !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 15px !important;
+        box-sizing: border-box !important;
+        overflow-y: auto !important;
+        background: rgba(0, 0, 0, .76) !important;
         backdrop-filter: blur(4px);
         -webkit-backdrop-filter: blur(4px);
-        z-index: 999999;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 15px;
-        box-sizing: border-box;
-        animation: jetonFadeIn 0.3s ease-out;
+        z-index: 2147483647 !important;
       }
 
-      .popup-content {
+      #popupModal.popup-overlay.is-visible {
+        display: flex !important;
+        animation: jetonFadeIn .25s ease-out;
+      }
+
+      #popupModal .popup-content {
         position: relative;
-        background: #ffffff;
         width: 100%;
         max-width: 440px;
         max-height: 90vh;
         overflow-y: auto;
-        border-radius: 18px;
         padding: 24px 20px 20px;
-        text-align: center;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-        font-family: Arial, Helvetica, sans-serif;
         box-sizing: border-box;
-        animation: jetonScaleUp 0.3s ease-out;
+        border-radius: 18px;
+        background: #fff;
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, .3);
+        animation: jetonScaleUp .3s ease-out;
       }
 
-      .popup-close-btn {
+      #popupModal .popup-close-btn {
         position: absolute;
-        top: 9px;
-        right: 12px;
-        background: transparent;
-        border: none;
-        font-size: 29px;
-        font-weight: normal;
-        color: #777777;
-        cursor: pointer;
-        line-height: 1;
+        top: 7px;
+        right: 10px;
         z-index: 3;
-        padding: 4px 7px;
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: #777;
+        font-size: 30px;
+        line-height: 1;
+        cursor: pointer;
       }
 
-      .popup-close-btn:hover {
+      #popupModal .popup-close-btn:hover {
         color: #f04432;
       }
 
-      .popup-badge {
+      #popupModal .popup-badge {
         display: inline-block;
+        margin: 7px 0 14px;
+        padding: 5px 12px;
+        border-radius: 20px;
         background: #ffe0d7;
-        color: #f04432;
+        color: #d93628;
         font-size: 11px;
         font-weight: 800;
         letter-spacing: 1px;
-        padding: 5px 12px;
-        border-radius: 20px;
-        margin: 7px 0 14px;
       }
 
-      .popup-image-link {
+      #popupModal .popup-image-link {
         display: block;
-        text-decoration: none;
-        border-radius: 12px;
+        margin: 0 auto 16px;
         overflow: hidden;
+        border-radius: 12px;
+        text-decoration: none;
       }
 
-      .popup-image-wrapper {
+      #popupModal .popup-image-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
         width: 100%;
         aspect-ratio: 1200 / 627;
         overflow: hidden;
         border-radius: 12px;
-        margin: 0 auto 16px;
         background: #f5f5f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
       }
 
-      .popup-image {
+      #popupModal .popup-image {
+        display: block;
         width: 100%;
         height: 100%;
         object-fit: contain;
-        display: block;
       }
 
-      .popup-title {
-        margin: 0 0 8px;
-        font-size: 21px;
+      #popupModal .popup-title {
+        margin: 0 0 9px;
         color: #1a1a1a;
-        line-height: 1.3;
+        font-size: 21px;
+        line-height: 1.4;
       }
 
-      .popup-description {
-        margin: 0 0 18px;
+      #popupModal .popup-description {
+        margin: 0 0 19px;
+        color: #555;
         font-size: 14px;
-        color: #555555;
-        line-height: 1.6;
+        line-height: 1.65;
       }
 
-      .popup-btn {
+      #popupModal .popup-btn {
         display: block;
         width: 100%;
-        padding: 14px 10px;
-        background: linear-gradient(100deg, #f04432, #ff7043);
-        color: #ffffff !important;
-        text-decoration: none !important;
-        font-weight: 800;
-        font-size: 15px;
-        border-radius: 10px;
-        box-shadow: 0 6px 16px rgba(240,68,50,0.25);
+        padding: 15px 12px;
         box-sizing: border-box;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        border-radius: 10px;
+        background: linear-gradient(100deg, #f04432, #ff7043);
+        box-shadow: 0 6px 16px rgba(240, 68, 50, .25);
+        color: #fff !important;
+        font-size: 15px;
+        font-weight: 800;
+        text-align: center;
+        text-decoration: none !important;
+        transition: transform .2s, box-shadow .2s;
       }
 
-      .popup-btn:hover {
+      #popupModal .popup-btn:hover {
         transform: translateY(-2px);
-        box-shadow: 0 9px 20px rgba(240,68,50,0.35);
+        box-shadow: 0 9px 20px rgba(240, 68, 50, .35);
       }
 
       @keyframes jetonFadeIn {
@@ -141,38 +155,40 @@
       }
 
       @keyframes jetonScaleUp {
-        from { transform: scale(0.92); }
+        from { transform: scale(.94); }
         to { transform: scale(1); }
       }
 
       @media (max-width: 480px) {
-        .popup-content {
-          max-width: 100%;
-          padding: 22px 16px 17px;
+        #popupModal.popup-overlay {
+          padding: 12px !important;
+        }
+
+        #popupModal .popup-content {
+          max-height: 88vh;
+          padding: 22px 16px 18px;
           border-radius: 15px;
         }
 
-        .popup-title {
+        #popupModal .popup-title {
           font-size: 19px;
         }
 
-        .popup-description {
+        #popupModal .popup-description {
           font-size: 13px;
         }
 
-        .popup-btn {
+        #popupModal .popup-btn {
           font-size: 14px;
         }
       }
 
       @media (prefers-reduced-motion: reduce) {
-        .popup-overlay,
-        .popup-content {
-          animation: none;
-        }
-
-        .popup-btn {
-          transition: none;
+        #popupModal.popup-overlay,
+        #popupModal .popup-content,
+        #popupModal .popup-btn {
+          animation: none !important;
+          transition: none !important;
         }
       }
     `;
@@ -182,19 +198,18 @@
     const modal = document.createElement("div");
     modal.id = "popupModal";
     modal.className = "popup-overlay";
+
     modal.setAttribute("role", "dialog");
     modal.setAttribute("aria-modal", "true");
     modal.setAttribute("aria-label", "Jeton special offer");
 
     modal.innerHTML = `
       <div class="popup-content">
-
         <button
           type="button"
           class="popup-close-btn"
-          aria-label="Close popup">
-          &times;
-        </button>
+          aria-label="Close popup"
+        >&times;</button>
 
         <div class="popup-badge">SPECIAL OFFER</div>
 
@@ -202,12 +217,14 @@
           class="popup-image-link"
           target="_blank"
           rel="nofollow sponsored noopener"
-          aria-label="Visit Jeton">
+          aria-label="Visit Jeton"
+        >
           <div class="popup-image-wrapper">
             <img
               class="popup-image"
               alt="Jeton promotional offer"
-              loading="eager">
+              loading="eager"
+            />
           </div>
         </a>
 
@@ -217,79 +234,107 @@
 
         <p class="popup-description">
           Discover Jeton and check the available virtual card
-          offers. Join through the link below to get started.
+          options. Visit through my referral link to get started.
         </p>
 
         <a
           class="popup-btn"
           target="_blank"
-          rel="nofollow sponsored noopener">
-          CLAIM YOUR OFFER &rarr;
-        </a>
-
+          rel="nofollow sponsored noopener"
+        >CLAIM YOUR OFFER &rarr;</a>
       </div>
     `;
 
     document.body.appendChild(modal);
 
-    // Set referral links
     modal.querySelectorAll("a").forEach(function (link) {
       link.href = REFERRAL_URL;
     });
 
-    // Load your Blogger image
     const img = modal.querySelector(".popup-image");
     const imageWrapper = modal.querySelector(".popup-image-wrapper");
+    const closeBtn = modal.querySelector(".popup-close-btn");
 
-    img.onerror = function () {
+    img.addEventListener("error", function () {
       imageWrapper.style.display = "none";
-      console.warn("Popup image failed to load:", IMAGE_URL);
-    };
+      console.error("Jeton popup image failed to load:", IMAGE_URL);
+    });
+
+    img.addEventListener("load", function () {
+      console.info("Jeton popup image loaded successfully.");
+    });
 
     img.src = IMAGE_URL;
 
-    // Close button
-    const closeBtn = modal.querySelector(".popup-close-btn");
+    let previousFocus = null;
+
+    function openPopup() {
+      previousFocus = document.activeElement;
+      modal.classList.add("is-visible");
+      closeBtn.focus();
+
+      try {
+        sessionStorage.setItem(STORAGE_KEY, "true");
+      } catch (error) {
+        // Popup still works if session storage is unavailable.
+      }
+    }
 
     function closePopup() {
-      modal.style.display = "none";
+      modal.classList.remove("is-visible");
+
+      if (
+        previousFocus &&
+        typeof previousFocus.focus === "function"
+      ) {
+        previousFocus.focus();
+      }
     }
 
     closeBtn.addEventListener("click", closePopup);
 
-    // Close when clicking the dark overlay
     modal.addEventListener("click", function (event) {
       if (event.target === modal) {
         closePopup();
       }
     });
 
-    // Close with Escape key
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && modal.style.display === "flex") {
+      if (
+        event.key === "Escape" &&
+        modal.classList.contains("is-visible")
+      ) {
         closePopup();
       }
     });
 
-    // Show after 3 seconds, once per browser tab session
-    setTimeout(function () {
-      try {
-        if (!sessionStorage.getItem("jetonPopupShown")) {
-          modal.style.display = "flex";
-          sessionStorage.setItem("jetonPopupShown", "true");
-        }
-      } catch (error) {
-        modal.style.display = "flex";
-      }
-    }, 3000);
+    let alreadyShown = false;
+
+    try {
+      alreadyShown = sessionStorage.getItem(STORAGE_KEY) === "true";
+    } catch (error) {
+      // If storage is blocked, show the popup normally.
+    }
+
+    if (!alreadyShown) {
+      window.setTimeout(openPopup, POPUP_DELAY);
+    }
+
+    console.info("Jeton popup script initialized.");
   }
 
-  // Works whether the page has loaded or not
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initJetonPopup);
-  } else {
+  function start() {
+    if (!document.body) {
+      document.addEventListener(
+        "DOMContentLoaded",
+        initJetonPopup,
+        { once: true }
+      );
+      return;
+    }
+
     initJetonPopup();
   }
+
+  start();
 })();
-//]]>
-</script>
