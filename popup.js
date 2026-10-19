@@ -241,7 +241,6 @@
     const img = modal.querySelector(".popup-image");
     const imageWrapper = modal.querySelector(".popup-image-wrapper");
 
-    // Fix: Attach onerror handler BEFORE setting src
     img.onerror = function () {
       imageWrapper.style.display = "none";
       console.warn("Popup image failed to load:", IMAGE_URL);
